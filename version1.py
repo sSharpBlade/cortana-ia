@@ -18,6 +18,8 @@ try:
         listener.adjust_for_ambient_noise(source)
         voice = listener.listen(source)
         rec = listener.recognize_google(voice, language="es-ES")
-        talk(rec)
+        rec = rec.lower()
+        if 'cortana' in rec:
+            talk(rec)
 except:
     pass
