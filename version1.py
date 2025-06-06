@@ -5,6 +5,8 @@ import datetime
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
+import spoty
+import time
 
 load_dotenv()
 
@@ -19,7 +21,6 @@ engine.setProperty('voice', voices[0].id)
 
 def configurar_gemini():
     genai.configure(api_key=GEMINI_API_KEY)
-    
     generation_config = {
         "temperature": 0.9,
         "top_p": 1,
@@ -54,49 +55,72 @@ def configurar_gemini():
 def chat_con_gemini(pregunta, model):
     try:
         response = model.generate_content(pregunta)
-        if response._error:
+        if hasattr(response, '_error') and response._error:
             return f"Error de Gemini: {response._error}"
         return response.text
     except Exception as e:
         return f"Ocurrió un error: {str(e)}"
 
-def talk(text):
+def speak(text):
     engine.say(text)
     engine.runAndWait()
 
-def listen():
-    rec = ""
-    try:
-        with sr.Microphone() as source:
-            print("Escuchando...")
-            voice = listener.listen(source)
-            rec = listener.recognize_google(voice, language="es-ES")
-            rec = rec.lower()
-            if name in rec:
-                rec = rec.replace(name, '')
-                print(rec)
-    except Exception as e:
-        print(f"Error en listen: {e}")
+def get_audio():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Escuchando...")
+        r.adjust_for_ambient_noise(source, duration=1)
+        audio = r.listen(source)
+        rec = ""
+        try:
+            rec = r.recognize_google(audio, language='es-ES').lower()
+            rec_normalizado = rec.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
+            if name in rec_normalizado:
+                rec = rec_normalizado.replace(f"{name} ", "")
+            else:
+                print(f"Debes decir el nombre '{name}' para activar.")
+                rec = ""
+        except sr.UnknownValueError:
+            print("No entendí lo que dijiste. Intenta de nuevo.")
+            rec = ""
+        except sr.RequestError as e:
+            print(f"Error de conexión con el servicio de reconocimiento: {e}")
+            rec = ""
+        except Exception as e:
+            print(f"Error inesperado al reconocer audio: {e}")
+            rec = ""
+    time.sleep(1)
     return rec
 
 def run():
     modelo_gemini = configurar_gemini()
 
     while True:
-        rec = listen()
+        rec = get_audio()
+
         if not rec:
             continue
 
         if 'reproduce' in rec:
-            music = rec.replace('reproduce','')
-            talk('Reproduciendo '+music)
-            pywhatkit.playonyt(music)
+            if 'spotify' in rec:
+                music = rec.replace('reproduce en spotify', '')
+                speak(f'Reproduciendo {music}')
+                spoty.play(os.getenv("spoty_client_id"), os.getenv("spoty_client_secret"), music)
+            else:
+                music = rec.replace('reproduce','')
+                speak('Reproduciendo '+music)
+                pywhatkit.playonyt(music)
         elif "hora" in rec:
             hora = datetime.datetime.now().strftime('%I:%M %p')
-            talk('Son las '+hora)
+            speak('Son las '+hora)
+
+        elif 'descansa' in rec:
+            speak("Bye bye")
+            break
+
         else:
             respuesta = chat_con_gemini(rec, modelo_gemini)
-            talk(respuesta)
+            speak(respuesta)
 
 if __name__ == "__main__":
     run()
