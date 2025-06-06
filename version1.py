@@ -1,6 +1,7 @@
 import speech_recognition as sr
 import pyttsx3
 import pywhatkit
+import datetime
 
 name = 'cortana'
 
@@ -36,6 +37,11 @@ def run():
         music = rec.replace('reproduce','')
         talk('Reproduciendo '+music)
         pywhatkit.playonyt(music)
-
+    elif "hora" in rec:
+        hora = datetime.datetime.now().strftime('%I:%M %p')
+        talk('Son las '+hora)
+    else:
+        # open ai
+        talk()
 
 run()
