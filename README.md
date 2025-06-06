@@ -10,3 +10,4 @@ pip install PyAudio
 
 pip install pywhatkit
 
+pip install google-generativeai
