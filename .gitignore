@@ -1,2 +1,4 @@
 .env
 /__pycache__
+historial_comandos.csv
+/.vscode
