@@ -15,3 +15,7 @@ pip install google-generativeai
 pip install spoty
 
 pip install python-dotenv
+
+### Instalación rápida
+
+pip install -r requirements.txt
