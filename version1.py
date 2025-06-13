@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import os
 import spoty
 import time
+import csv
+from datetime import datetime
 
 load_dotenv()
 
@@ -25,7 +27,7 @@ def configurar_gemini():
         "temperature": 0.9,
         "top_p": 1,
         "top_k": 1,
-        "max_output_tokens": 20,
+        "max_output_tokens": 200,
     }
 
     safety_settings = [
@@ -92,6 +94,11 @@ def get_audio():
     time.sleep(1)
     return rec
 
+def guardar_historial(comando, respuesta):
+    with open('historial_comandos.csv', mode='a', encoding='utf-8', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([datetime.now().isoformat(), comando, respuesta])
+
 def run():
     modelo_gemini = configurar_gemini()
 
@@ -106,21 +113,24 @@ def run():
                 music = rec.replace('reproduce en spotify', '')
                 speak(f'Reproduciendo {music}')
                 spoty.play(os.getenv("spoty_client_id"), os.getenv("spoty_client_secret"), music)
+                guardar_historial(rec, f'Reproduciendo {music} en Spotify')
             else:
                 music = rec.replace('reproduce','')
                 speak('Reproduciendo '+music)
                 pywhatkit.playonyt(music)
+                guardar_historial(rec, f'Reproduciendo {music} en YouTube')
         elif "hora" in rec:
-            hora = datetime.datetime.now().strftime('%I:%M %p')
+            hora = datetime.now().strftime('%I:%M %p')
             speak('Son las '+hora)
-
+            guardar_historial(rec, f'Son las {hora}')
         elif 'descansa' in rec:
             speak("Bye bye")
+            guardar_historial(rec, 'Bye bye')
             break
-
         else:
             respuesta = chat_con_gemini(rec, modelo_gemini)
             speak(respuesta)
+            guardar_historial(rec, respuesta)
 
 if __name__ == "__main__":
     run()
