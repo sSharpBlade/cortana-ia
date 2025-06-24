@@ -27,7 +27,7 @@ def configurar_gemini():
         "temperature": 0.9,
         "top_p": 1,
         "top_k": 1,
-        "max_output_tokens": 200,
+        "max_output_tokens": 20,
     }
 
     safety_settings = [

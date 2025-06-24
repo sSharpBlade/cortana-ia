@@ -2,3 +2,5 @@
 /__pycache__
 historial_comandos.csv
 /.vscode
+*.h5
+*.pickle
