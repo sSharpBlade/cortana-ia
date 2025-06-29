@@ -5,3 +5,12 @@ pywhatkit
 google-generativeai
 spoty
 python-dotenv
+customtkinter
+pillow
+requests
+wikipedia
+newsapi-python
+openweathermap
+pyautogui
+psutil
+schedule

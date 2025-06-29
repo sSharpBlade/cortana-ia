@@ -1,0 +1,15 @@
+# API Keys necesarias para Angie Assistant
+# Copia este contenido a un archivo .env en la raíz del proyecto
+
+# Google Gemini AI
+GEMINI_API_KEY=tu_api_key_de_gemini_aqui
+
+# Spotify (opcional)
+spoty_client_id=tu_spotify_client_id_aqui
+spoty_client_secret=tu_spotify_client_secret_aqui
+
+# News API (opcional)
+NEWS_API_KEY=tu_news_api_key_aqui
+
+# OpenWeatherMap API (opcional)
+WEATHER_API_KEY=tu_openweathermap_api_key_aqui 
