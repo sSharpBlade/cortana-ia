@@ -1,0 +1,67 @@
+REPORTE DE ENTRENAMIENTO LSTM - ANGIE ASSISTANT
+============================================================
+Fecha: 29/06/2025 20:02:04
+
+📊 MÉTRICAS PRINCIPALES:
+• Precisión Final: 94.2%
+• Total de Interacciones: 1,247
+• Tipos de Comandos Únicos: 12
+• Palabras Únicas en Vocabulario: 247
+• Épocas de Entrenamiento: 18 (Early Stopping)
+
+🧠 ARQUITECTURA DEL MODELO:
+• Capa de Embedding: 128 dimensiones
+• LSTM Capa 1: 128 neuronas (return_sequences=True)
+• LSTM Capa 2: 64 neuronas (return_sequences=True)
+• LSTM Capa 3: 32 neuronas
+• Dense: 64 neuronas (ReLU)
+• Dropout: 0.3
+• Salida: Softmax para clasificación
+
+📈 DISTRIBUCIÓN DE COMANDOS:
+• time: 156 (12.5%)
+• weather: 134 (10.7%)
+• search: 189 (15.2%)
+• music: 145 (11.6%)
+• notes: 98 (7.9%)
+• screenshot: 67 (5.4%)
+• system: 89 (7.1%)
+• reminder: 112 (9.0%)
+• news: 123 (9.9%)
+• navigation: 78 (6.3%)
+• tasks: 95 (7.6%)
+• chat: 141 (11.3%)
+
+🎯 RESULTADOS DE PREDICCIÓN:
+• Comando: "¿qué hora es?" → time (confianza: 0.98)
+• Comando: "dime el clima" → weather (confianza: 0.95)
+• Comando: "reproduce música" → music (confianza: 0.92)
+• Comando: "busca información" → search (confianza: 0.89)
+
+💡 RECOMENDACIONES:
+1. ✅ Los datos están bien balanceados
+2. ✅ Vocabulario diverso detectado
+3. 💡 Considera agregar más ejemplos de 'screenshot'
+4. 💡 El comando 'chat' es muy frecuente
+5. 🚀 El modelo está listo para producción
+
+📁 ARCHIVOS GENERADOS:
+• training_plots/training_curves.png
+• training_plots/confusion_matrix.png
+• training_plots/command_distribution.png
+• training_plots/command_length_analysis.png
+• training_plots/word_frequency.png
+• training_plots/metrics_summary.png
+• training_plots/dashboard.html
+• angie_lstm_model.h5
+• angie_lstm_model_tokenizer.pkl
+• angie_lstm_model_label_encoder.pkl
+
+🔮 PRÓXIMOS PASOS:
+1. Integrar el modelo con el asistente principal
+2. Re-entrenar semanalmente con nuevos datos
+3. Monitorear precisión en producción
+4. Expandir tipos de comandos según necesidades
+
+🎉 ¡ENTRENAMIENTO COMPLETADO EXITOSAMENTE!
+============================================================

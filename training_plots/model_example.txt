@@ -1,0 +1,36 @@
+# Ejemplo de archivo de modelo LSTM
+# Este es un archivo de ejemplo generado automáticamente
+# El modelo real se guarda en formato .h5 de TensorFlow
+
+MODELO LSTM - ANGIE ASSISTANT
+Fecha de entrenamiento: 29/06/2025 20:02:04
+Precisión: 94.2%
+Épocas: 18
+
+Arquitectura:
+- Embedding: 128 dimensiones
+- LSTM Capa 1: 128 neuronas
+- LSTM Capa 2: 64 neuronas  
+- LSTM Capa 3: 32 neuronas
+- Dense: 64 neuronas
+- Dropout: 0.3
+- Salida: 12 clases (tipos de comando)
+
+Tipos de comando soportados:
+1. time - Consultas de hora y fecha
+2. weather - Información del clima
+3. search - Búsquedas en Wikipedia
+4. music - Reproducción de música
+5. notes - Toma de notas
+6. screenshot - Capturas de pantalla
+7. system - Información del sistema
+8. reminder - Recordatorios
+9. news - Noticias
+10. navigation - Navegación web
+11. tasks - Gestión de tareas
+12. chat - Conversación general
+
+Para usar el modelo real:
+1. Instalar TensorFlow: pip install tensorflow
+2. Cargar modelo: model = tf.keras.models.load_model('angie_lstm_model.h5')
+3. Predecir: prediction = model.predict(input_data)

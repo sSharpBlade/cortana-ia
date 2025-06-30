@@ -14,3 +14,10 @@ openweathermap
 pyautogui
 psutil
 schedule
+# Dependencias para entrenamiento LSTM
+tensorflow>=2.10.0
+numpy>=1.21.0
+pandas>=1.3.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+scikit-learn>=1.0.0

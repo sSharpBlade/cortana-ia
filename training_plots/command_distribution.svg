@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <style>
+            .title { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #333; }
+            .axis { font-family: Arial, sans-serif; font-size: 12px; fill: #666; }
+            .grid { stroke: #ddd; stroke-width: 1; opacity: 0.5; }
+            .line { stroke: #007acc; stroke-width: 2; fill: none; }
+            .bar { fill: #007acc; opacity: 0.8; }
+            .text { font-family: Arial, sans-serif; font-size: 10px; fill: #333; }
+        </style>
+    </defs>
+    
+    <!-- Título -->
+    <text x="400" y="30" text-anchor="middle" class="title">Distribución de Tipos de Comandos</text>
+    
+    <!-- Ejes -->
+    <line x1="100" y1="500" x2="700" y2="500" stroke="#333" stroke-width="2"/>
+    <line x1="100" y1="100" x2="100" y2="500" stroke="#333" stroke-width="2"/>
+    
+    <!-- Grid -->
+    <line x1="100" y1="400" x2="700" y2="400" class="grid"/>
+    <line x1="100" y1="300" x2="700" y2="300" class="grid"/>
+    <line x1="100" y1="200" x2="700" y2="200" class="grid"/>
+    <line x1="200" y1="100" x2="200" y2="500" class="grid"/>
+    <line x1="300" y1="100" x2="300" y2="500" class="grid"/>
+    <line x1="400" y1="100" x2="400" y2="500" class="grid"/>
+    <line x1="500" y1="100" x2="500" y2="500" class="grid"/>
+    <line x1="600" y1="100" x2="600" y2="500" class="grid"/>
+    
+    <!-- Datos -->
+    <rect x="150.0" y="252.38095238095238" width="31.666666666666664" height="247.61904761904762" class="bar"/>
+    <text x="165.83333333333334" y="520" text-anchor="middle" class="text">156</text>
+    <rect x="191.66666666666666" y="287.3015873015873" width="31.666666666666664" height="212.6984126984127" class="bar"/>
+    <text x="207.5" y="520" text-anchor="middle" class="text">134</text>
+    <rect x="233.33333333333331" y="200.0" width="31.666666666666664" height="300.0" class="bar"/>
+    <text x="249.16666666666666" y="520" text-anchor="middle" class="text">189</text>
+    <rect x="275.0" y="269.8412698412699" width="31.666666666666664" height="230.15873015873015" class="bar"/>
+    <text x="290.8333333333333" y="520" text-anchor="middle" class="text">145</text>
+    <rect x="316.66666666666663" y="344.44444444444446" width="31.666666666666664" height="155.55555555555554" class="bar"/>
+    <text x="332.49999999999994" y="520" text-anchor="middle" class="text">98</text>
+    <rect x="358.3333333333333" y="393.6507936507936" width="31.666666666666664" height="106.34920634920636" class="bar"/>
+    <text x="374.16666666666663" y="520" text-anchor="middle" class="text">67</text>
+    <rect x="400.0" y="358.73015873015873" width="31.666666666666664" height="141.26984126984127" class="bar"/>
+    <text x="415.8333333333333" y="520" text-anchor="middle" class="text">89</text>
+    <rect x="441.66666666666663" y="322.22222222222223" width="31.666666666666664" height="177.77777777777777" class="bar"/>
+    <text x="457.49999999999994" y="520" text-anchor="middle" class="text">112</text>
+    <rect x="483.3333333333333" y="304.76190476190476" width="31.666666666666664" height="195.23809523809524" class="bar"/>
+    <text x="499.16666666666663" y="520" text-anchor="middle" class="text">123</text>
+    <rect x="525.0" y="376.1904761904762" width="31.666666666666664" height="123.80952380952381" class="bar"/>
+    <text x="540.8333333333334" y="520" text-anchor="middle" class="text">78</text>
+    <rect x="566.6666666666666" y="349.2063492063492" width="31.666666666666664" height="150.79365079365078" class="bar"/>
+    <text x="582.5" y="520" text-anchor="middle" class="text">95</text>
+    <rect x="608.3333333333333" y="276.1904761904762" width="31.666666666666664" height="223.8095238095238" class="bar"/>
+    <text x="624.1666666666666" y="520" text-anchor="middle" class="text">141</text>
+</svg>

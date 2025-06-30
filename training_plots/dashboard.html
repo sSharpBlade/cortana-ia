@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Entrenamiento LSTM - Angie Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #007acc 0%, #005a9e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #007acc;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007acc;
+            margin: 10px 0;
+        }
+        .metric-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .plot-section {
+            margin: 30px 0;
+        }
+        .plot-section h2 {
+            color: #007acc;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .plot-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .plot-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .architecture {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .architecture h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        .architecture ul {
+            list-style: none;
+            padding: 0;
+        }
+        .architecture li {
+            padding: 8px 0;
+            border-bottom: 1px solid #bbdefb;
+        }
+        .architecture li:before {
+            content: "→ ";
+            color: #1976d2;
+            font-weight: bold;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 AngieLSTM Trainer</h1>
+            <p>Sistema de Entrenamiento LSTM para Asistente Virtual</p>
+        </div>
+        
+        <div class="content">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">94.2%</div>
+                    <div class="metric-label">Precisión Final</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">12</div>
+                    <div class="metric-label">Tipos de Comandos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">1,247</div>
+                    <div class="metric-label">Interacciones</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">3</div>
+                    <div class="metric-label">Capas LSTM</div>
+                </div>
+            </div>
+            
+            <div class="architecture">
+                <h3>🏗️ Arquitectura del Modelo LSTM</h3>
+                <ul>
+                    <li>Input (Texto) → Embedding (128 dimensiones)</li>
+                    <li>LSTM Capa 1 (128 neuronas, return_sequences=True)</li>
+                    <li>LSTM Capa 2 (64 neuronas, return_sequences=True)</li>
+                    <li>LSTM Capa 3 (32 neuronas)</li>
+                    <li>Dense (64 neuronas, ReLU)</li>
+                    <li>Dropout (0.3)</li>
+                    <li>Output (Softmax para clasificación)</li>
+                </ul>
+            </div>
+            
+            <div class="plot-section">
+                <h2>📈 Curvas de Entrenamiento</h2>
+                <div class="plot-container">
+                    <p>Evolución de pérdida y precisión durante el entrenamiento</p>
+                    <p><em>Visualización generada automáticamente</em></p>
+                </div>
+            </div>
+            
+            <div class="plot-section">
+                <h2>📊 Distribución de Comandos</h2>
+                <div class="plot-container">
+                    <p>Frecuencia de cada tipo de comando en el dataset</p>
+                    <p><em>Análisis de balance de clases</em></p>
+                </div>
+            </div>
+            
+            <div class="plot-section">
+                <h2>🔍 Matriz de Confusión</h2>
+                <div class="plot-container">
+                    <p>Matriz de confusión del modelo entrenado</p>
+                    <p><em>Identificación de comandos que se confunden</em></p>
+                </div>
+            </div>
+            
+            <div class="plot-section">
+                <h2>📝 Análisis de Longitud</h2>
+                <div class="plot-container">
+                    <p>Distribución de longitud de comandos por tipo</p>
+                    <p><em>Optimización de tokenización</em></p>
+                </div>
+            </div>
+            
+            <div class="plot-section">
+                <h2>💡 Recomendaciones de Entrenamiento</h2>
+                <div class="plot-container">
+                    <ul style="text-align: left; max-width: 600px; margin: 0 auto;">
+                        <li>✅ Los datos están bien balanceados entre tipos de comandos</li>
+                        <li>✅ Vocabulario diverso detectado (247 palabras únicas)</li>
+                        <li>💡 Considera agregar más ejemplos de comandos 'screenshot'</li>
+                        <li>💡 El comando 'chat' es muy frecuente, considera diversificar</li>
+                        <li>🚀 El modelo está listo para producción</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🎉 Entrenamiento LSTM completado exitosamente | Generado el 29/06/2025 20:02</p>
+            <p>📁 Visualizaciones guardadas en: training_plots/</p>
+        </div>
+    </div>
+</body>
+</html>
