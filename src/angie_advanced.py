@@ -5,6 +5,8 @@ import datetime
 import google.generativeai as genai
 from dotenv import load_dotenv
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import spoty
 import time
 import csv
@@ -24,6 +26,7 @@ import psutil
 import webbrowser
 import sqlite3
 import schedule
+import pyperclip
 
 # Configurar CustomTkinter
 ctk.set_appearance_mode("dark")
@@ -35,6 +38,13 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 DEFAULT_CITY = os.getenv("DEFAULT_CITY", "Madrid")
+
+# Obtener directorio raíz del proyecto
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def get_project_path(*path_parts):
+    """Obtener ruta absoluta relativa al directorio raíz del proyecto"""
+    return os.path.join(PROJECT_ROOT, *path_parts)
 
 class AngieAdvanced:
     def __init__(self):
@@ -67,7 +77,7 @@ class AngieAdvanced:
         
     def setup_database(self):
         """Configurar base de datos SQLite para recordatorios y tareas"""
-        self.conn = sqlite3.connect('angie_data.db')
+        self.conn = sqlite3.connect(get_project_path('data', 'angie_data.db'))
         self.cursor = self.conn.cursor()
         
         # Crear tablas
@@ -915,7 +925,7 @@ class AngieAdvanced:
         try:
             screenshot = pyautogui.screenshot()
             filename = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-            screenshot.save(filename)
+            screenshot.save(get_project_path('media', filename))
             self.speak("Captura de pantalla guardada")
             self.add_to_chat(f"Angie: Captura de pantalla guardada como {filename}")
         except:
@@ -1081,7 +1091,7 @@ class AngieAdvanced:
     
     def guardar_historial(self, comando, respuesta):
         try:
-            with open('historial_comandos.csv', mode='a', encoding='utf-8', newline='') as file:
+            with open(get_project_path('data', 'historial_comandos.csv'), mode='a', encoding='utf-8', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow([datetime.now().isoformat(), comando, respuesta])
         except:

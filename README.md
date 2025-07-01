@@ -1,130 +1,225 @@
-# 🎤 Angie - Asistente Virtual Inteligente
+# 🎤 Angie Advanced - Asistente Virtual Pro
 
-Un asistente virtual moderno con interfaz gráfica que combina reconocimiento de voz, inteligencia artificial y múltiples funcionalidades útiles.
-
-## ✨ Características Principales
-
-### 🎯 Funcionalidades Básicas
-- **Reconocimiento de voz** en español
-- **Síntesis de voz** para respuestas habladas
-- **Interfaz gráfica moderna** con CustomTkinter
-- **Integración con Google Gemini AI** para respuestas inteligentes
-
-### 🚀 Funcionalidades Avanzadas
-- **🎵 Reproducción de música** en YouTube y Spotify
-- **🌤️ Información del clima** en tiempo real
-- **📰 Noticias actuales** de España
-- **🔍 Búsquedas en Wikipedia**
-- **📝 Sistema de notas** integrado
-- **🖥️ Capturas de pantalla**
-- **⏰ Consulta de hora**
-- **📊 Historial de comandos**
-
-### 🎨 Interfaz Visual
-- **Tema oscuro moderno**
-- **Botones de comandos rápidos**
-- **Área de chat en tiempo real**
-- **Indicadores de estado**
-- **Entrada de texto manual**
-
-## 🛠️ Instalación
-
-1. **Clonar el repositorio:**
-```bash
-git clone <tu-repositorio>
-cd AsistenteVirtual
-```
-
-2. **Instalar dependencias:**
-```bash
-pip install -r requirements.txt
-```
-
-3. **Configurar API Keys:**
-   - Copia `config_example.txt` a `.env`
-   - Agrega tus API keys necesarias
-
-## 🔑 API Keys Requeridas
-
-### Obligatoria:
-- **GEMINI_API_KEY**: Google Gemini AI (https://makersuite.google.com/app/apikey)
-
-### Opcionales:
-- **NEWS_API_KEY**: News API (https://newsapi.org/)
-- **WEATHER_API_KEY**: OpenWeatherMap (https://openweathermap.org/api)
-- **spoty_client_id & spoty_client_secret**: Spotify (https://developer.spotify.com/)
-
-## 🚀 Uso
-
-### Ejecutar la interfaz visual:
-```bash
-python angie_assistant.py
-```
-
-### Comandos de voz:
-- "Angie, reproduce [canción]" - Reproduce música en YouTube
-- "Angie, reproduce en spotify [canción]" - Reproduce en Spotify
-- "Angie, ¿qué hora es?" - Consulta la hora
-- "Angie, ¿cómo está el clima?" - Información del clima
-- "Angie, dame las noticias" - Noticias actuales
-- "Angie, busca [término]" - Búsqueda en Wikipedia
-- "Angie, toma una nota" - Abre editor de notas
-- "Angie, toma una captura" - Captura de pantalla
-- "Angie, descansa" - Cierra el asistente
-
-### Comandos por texto:
-- Usa la barra de entrada de texto para comandos manuales
-- Presiona Enter o el botón "Enviar"
+Un asistente virtual inteligente con capacidades avanzadas de procesamiento de lenguaje natural, reconocimiento de voz y integración con APIs externas.
 
 ## 📁 Estructura del Proyecto
 
 ```
-AsistenteVirtual/
-├── angie_assistant.py      # Asistente principal con interfaz visual
-├── version1.py            # Versión anterior (consola)
-├── spoty.py              # Módulo de Spotify
-├── requirements.txt       # Dependencias
-├── config_example.txt    # Ejemplo de configuración
-├── historial_comandos.csv # Historial de comandos
-└── README.md             # Este archivo
+Cortana/
+├── 📂 src/                     # Código fuente principal
+│   ├── angie_advanced.py       # Asistente principal con GUI
+│   ├── angie_advanced_temp.py  # Versión temporal
+│   ├── angie_assistant.py      # Versión básica del asistente
+│   ├── angie_lstm_integration.py # Integración con LSTM
+│   ├── angie_with_lstm.py      # Asistente con modelo LSTM
+│   ├── asistente_rnn.py        # Versión con RNN
+│   ├── spoty.py                # Integración con Spotify
+│   └── version1.py             # Primera versión
+│
+├── 📂 models/                  # Modelos de ML y entrenamiento
+│   ├── angie_lstm_trainer.py   # Entrenador LSTM
+│   ├── entrenar_rnn.py         # Entrenador RNN
+│   ├── run_lstm_training.py    # Script de entrenamiento
+│   ├── modelo_rnn_comandos.h5  # Modelo RNN entrenado
+│   └── tokenizer.pickle        # Tokenizador
+│
+├── 📂 tests/                   # Archivos de pruebas
+│   ├── test_news_api.py        # Pruebas de API de noticias
+│   ├── test_notes_system.py    # Pruebas del sistema de notas
+│   ├── test_search_system.py   # Pruebas de búsqueda
+│   ├── test_voice.py           # Pruebas de reconocimiento de voz
+│   └── test_weather_api.py     # Pruebas de API del clima
+│
+├── 📂 demos/                   # Archivos de demostración
+│   ├── demo_clima.py           # Demo del sistema de clima
+│   ├── demo_notes_interactive.py # Demo interactivo de notas
+│   └── demo_noticias.py        # Demo del sistema de noticias
+│
+├── 📂 docs/                    # Documentación
+│   ├── README.md               # Documentación principal
+│   ├── README_LSTM.md          # Documentación LSTM
+│   ├── README_NOTAS.md         # Documentación de notas
+│   ├── README_NOTICIAS.md      # Documentación de noticias
+│   ├── README_WEATHERAPI.md    # Documentación del clima
+│   ├── INSTRUCCIONES_LSTM.md   # Instrucciones LSTM
+│   ├── MEJORAS_NOTAS_COMPLETADAS.md # Log de mejoras
+│   └── SOLUCION_BUSQUEDAS.md   # Soluciones de búsqueda
+│
+├── 📂 data/                    # Archivos de datos
+│   ├── angie_data.db           # Base de datos principal
+│   ├── historial_comandos.csv  # Historial de comandos
+│   └── nota_*.txt              # Archivos de notas
+│
+├── 📂 media/                   # Imágenes y multimedia
+│   └── screenshot_*.png        # Capturas de pantalla
+│
+├── 📂 utils/                   # Utilidades y scripts auxiliares
+│   ├── check_config.py         # Verificador de configuración
+│   ├── init_database.py        # Inicializador de BD
+│   ├── install_lstm_dependencies.py # Instalador LSTM
+│   ├── install_visualization_deps.py # Instalador visualización
+│   ├── generate_sample_plots.py # Generador de gráficos
+│   ├── open_dashboard.py       # Abridor de dashboard
+│   └── visualize_training.py   # Visualizador de entrenamiento
+│
+├── 📂 config/                  # Archivos de configuración
+│   └── config_example.txt      # Ejemplo de configuración
+│
+├── 📂 training_plots/          # Gráficos de entrenamiento
+│   ├── command_distribution.svg
+│   ├── training_loss.svg
+│   ├── dashboard.html
+│   ├── model_example.txt
+│   └── training_report.txt
+│
+├── 📂 front/                   # Frontend (futuro)
+├── 📂 legacy/                  # Código legacy
+└── requirements.txt            # Dependencias del proyecto
 ```
 
-## 🎯 Comandos Rápidos
+## 🚀 Inicio Rápido
 
-La interfaz incluye botones para acceder rápidamente a:
-- 🌤️ Clima
-- 📰 Noticias  
-- ⏰ Hora
-- 🔍 Buscar
-- 📝 Notas
-- 🖥️ Captura
+### Requisitos Previos
 
-## 🔧 Personalización
+- Python 3.8+
+- pip
+- Micrófono y altavoces
 
-### Cambiar el nombre del asistente:
-Edita la línea `self.name = 'angie'` en `angie_assistant.py`
+### Instalación
 
-### Agregar nuevas funcionalidades:
-1. Crea una nueva función en la clase `AngieAssistant`
-2. Agrega el comando en `process_command()`
-3. Opcionalmente, agrega un botón en la interfaz
+1. **Clonar el repositorio**
 
-## 📝 Historial
+   ```bash
+   git clone <repository-url>
+   cd Cortana
+   ```
 
-El asistente guarda automáticamente todos los comandos y respuestas en `historial_comandos.csv` con timestamps.
+2. **Instalar dependencias**
 
-## 🤝 Contribuciones
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-¡Las contribuciones son bienvenidas! Puedes:
-- Agregar nuevas funcionalidades
-- Mejorar la interfaz
-- Optimizar el código
-- Reportar bugs
+3. **Configurar APIs**
+
+   - Copia `config/config_example.txt` a `.env`
+   - Agrega tus claves de API:
+     - Gemini AI API Key
+     - Weather API Key (weatherapi.com)
+     - News API Key (newsapi.org)
+     - Spotify API Keys (opcional)
+
+4. **Inicializar base de datos**
+
+   ```bash
+   python utils/init_database.py
+   ```
+
+5. **Ejecutar el asistente**
+   ```bash
+   python src/angie_advanced.py
+   ```
+
+## ✨ Características Principales
+
+### 🎯 Funcionalidades Básicas
+
+- **Reconocimiento de voz** en español
+- **Síntesis de voz** con respuestas naturales
+- **Interfaz gráfica** moderna con CustomTkinter
+- **Chat con IA** usando Google Gemini
+
+### 🌟 Funcionalidades Avanzadas
+
+- **Sistema de notas** con base de datos SQLite
+- **Información del clima** en tiempo real
+- **Noticias** por categorías
+- **Búsquedas en Wikipedia**
+- **Capturas de pantalla**
+- **Información del sistema**
+- **Recordatorios y tareas**
+- **Integración con Spotify**
+
+### 🧠 Machine Learning
+
+- **Modelo LSTM** para clasificación de comandos
+- **Modelo RNN** para procesamiento de lenguaje
+- **Entrenamiento personalizable**
+- **Visualización de métricas**
+
+## 🛠️ Scripts Útiles
+
+### Verificación del Sistema
+
+```bash
+python utils/check_config.py       # Verificar configuración
+```
+
+### Entrenamiento de Modelos
+
+```bash
+python models/run_lstm_training.py # Entrenar modelo LSTM
+python models/entrenar_rnn.py      # Entrenar modelo RNN
+python utils/visualize_training.py # Visualizar entrenamiento
+```
+
+### Demos y Pruebas
+
+```bash
+python demos/demo_clima.py         # Demo del clima
+python demos/demo_noticias.py      # Demo de noticias
+python tests/test_voice.py         # Probar reconocimiento de voz
+```
+
+## 📖 Documentación Detallada
+
+- **[Documentación LSTM](docs/README_LSTM.md)** - Guía completa del modelo LSTM
+- **[Sistema de Notas](docs/README_NOTAS.md)** - Funcionalidades de notas
+- **[API de Noticias](docs/README_NOTICIAS.md)** - Configuración de noticias
+- **[API del Clima](docs/README_WEATHERAPI.md)** - Configuración del clima
+
+## 🔧 Configuración
+
+### Variables de Entorno (.env)
+
+```env
+GEMINI_API_KEY=tu_gemini_api_key
+WEATHER_API_KEY=tu_weather_api_key
+NEWS_API_KEY=tu_news_api_key
+DEFAULT_CITY=tu_ciudad
+spoty_client_id=tu_spotify_client_id
+spoty_client_secret=tu_spotify_client_secret
+```
+
+### Comandos de Voz Soportados
+
+- "Angie, ¿qué clima hace?"
+- "Angie, reproduce música en Spotify"
+- "Angie, toma una nota"
+- "Angie, ¿qué noticias hay?"
+- "Angie, busca información sobre..."
+- "Angie, ¿qué hora es?"
+- "Angie, toma una captura"
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT.
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
----
+## 👨‍💻 Autor
 
-**¡Disfruta usando Angie, tu asistente virtual personal! 🎤✨**
+Desarrollado con ❤️ por [Tu Nombre]
+
+## 🔗 Enlaces Útiles
+
+- [Google Gemini AI](https://ai.google.dev/)
+- [Weather API](https://www.weatherapi.com/)
+- [News API](https://newsapi.org/)
+- [Spotify Web API](https://developer.spotify.com/documentation/web-api/)
