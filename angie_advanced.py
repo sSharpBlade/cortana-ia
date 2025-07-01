@@ -326,8 +326,26 @@ class AngieAdvanced:
                 self.get_weather()
         
         # Comandos de noticias
-        elif "noticias" in command:
-            self.get_news()
+        elif "noticias" in command or "noticia" in command:
+            # Detectar categoría específica
+            if "deportes" in command or "deporte" in command:
+                self.get_quick_news_summary("sports")
+            elif "tecnología" in command or "tecnologia" in command:
+                self.get_quick_news_summary("technology")
+            elif "ciencia" in command:
+                self.get_quick_news_summary("science")
+            elif "salud" in command:
+                self.get_quick_news_summary("health")
+            elif "negocios" in command or "economía" in command or "economia" in command:
+                self.get_quick_news_summary("business")
+            elif "entretenimiento" in command:
+                self.get_quick_news_summary("entertainment")
+            else:
+                # Si no se especifica categoría, mostrar ventana completa
+                if "rápidas" in command or "rapidas" in command or "resumen" in command:
+                    self.get_quick_news_summary("general")
+                else:
+                    self.get_news()
         
         # Comandos de búsqueda
         elif "busca" in command or "buscar" in command:
@@ -451,22 +469,9 @@ class AngieAdvanced:
         except Exception as e:
             self.add_to_chat(f"Angie: Error al obtener el clima de {city}: {str(e)}")
     
-    def get_news(self):
-        try:
-            url = f"https://newsapi.org/v2/top-headlines?country=es&apiKey={NEWS_API_KEY}"
-            response = requests.get(url)
-            data = response.json()
-            
-            if response.status_code == 200 and data['articles']:
-                news = data['articles'][0]
-                title = news['title']
-                self.speak(f"Noticia principal: {title}")
-                self.add_to_chat(f"Angie: Noticia principal: {title}")
-                self.add_to_chat(f"Angie: {news.get('description', 'Sin descripción')}")
-            else:
-                self.add_to_chat("Angie: No pude obtener las noticias")
-        except:
-            self.add_to_chat("Angie: Error al obtener las noticias")
+    def get_news(self, category="general", query="", country="es"):
+        """Obtener noticias con opciones avanzadas"""
+        self.show_news_window(category, query, country)
     
     def get_time(self):
         hora = datetime.now().strftime('%I:%M %p')
@@ -698,7 +703,494 @@ class AngieAdvanced:
     
     def run(self):
         self.root.mainloop()
+    
+    def show_news_window(self, category="general", query="", country="es"):
+        """Mostrar ventana de noticias con opciones avanzadas"""
+        news_window = ctk.CTkToplevel(self.root)
+        news_window.title("📰 Centro de Noticias - Angie")
+        news_window.geometry("900x700")
+        news_window.resizable(True, True)
+        
+        # Frame principal
+        main_frame = ctk.CTkFrame(news_window)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Título
+        title_label = ctk.CTkLabel(main_frame, text="📰 Centro de Noticias", 
+                                  font=ctk.CTkFont(size=24, weight="bold"))
+        title_label.pack(pady=10)
+        
+        # Frame de controles
+        controls_frame = ctk.CTkFrame(main_frame)
+        controls_frame.pack(fill="x", padx=10, pady=5)
+        
+        # Categorías
+        category_label = ctk.CTkLabel(controls_frame, text="Categoría:")
+        category_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        
+        self.category_var = ctk.StringVar(value=category)
+        category_menu = ctk.CTkOptionMenu(controls_frame, 
+                                         values=["general", "business", "entertainment", 
+                                                "health", "science", "sports", "technology"],
+                                         variable=self.category_var)
+        category_menu.grid(row=0, column=1, padx=5, pady=5)
+        
+        # País
+        country_label = ctk.CTkLabel(controls_frame, text="País:")
+        country_label.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+        
+        self.country_var = ctk.StringVar(value=country)
+        country_menu = ctk.CTkOptionMenu(controls_frame,
+                                        values=["es", "us", "gb", "fr", "de", "it", "mx", "ar"],
+                                        variable=self.country_var)
+        country_menu.grid(row=0, column=3, padx=5, pady=5)
+        
+        # Búsqueda personalizada
+        search_label = ctk.CTkLabel(controls_frame, text="Buscar:")
+        search_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        
+        self.search_entry = ctk.CTkEntry(controls_frame, placeholder_text="Ej: inteligencia artificial")
+        self.search_entry.grid(row=1, column=1, columnspan=2, padx=5, pady=5, sticky="ew")
+        
+        # Botón de actualizar
+        refresh_button = ctk.CTkButton(controls_frame, text="🔄 Actualizar", 
+                                      command=lambda: self.load_news(news_frame))
+        refresh_button.grid(row=1, column=3, padx=5, pady=5)
+        
+        # Configurar columnas
+        controls_frame.columnconfigure(1, weight=1)
+        controls_frame.columnconfigure(2, weight=1)
+        
+        # Frame para noticias (scrollable)
+        news_frame = ctk.CTkScrollableFrame(main_frame, height=500)
+        news_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Cargar noticias iniciales
+        self.load_news(news_frame)
+        
+    def load_news(self, news_frame):
+        """Cargar y mostrar noticias"""
+        # Limpiar frame
+        for widget in news_frame.winfo_children():
+            widget.destroy()
+            
+        # Mostrar indicador de carga
+        loading_label = ctk.CTkLabel(news_frame, text="🔄 Cargando noticias...", 
+                                    font=ctk.CTkFont(size=16))
+        loading_label.pack(pady=20)
+        
+        # Actualizar interfaz
+        news_frame.update()
+        
+        # Obtener noticias en hilo separado
+        threading.Thread(target=self._fetch_and_display_news, 
+                        args=(news_frame, loading_label), daemon=True).start()
+        
+    def _fetch_and_display_news(self, news_frame, loading_label):
+        """Obtener y mostrar noticias en hilo separado"""
+        try:
+            # Verificar API key
+            if not NEWS_API_KEY or NEWS_API_KEY == "tu_news_api_key_aqui":
+                self.root.after(0, self._display_error, news_frame, loading_label, 
+                               "API key de noticias no configurada. Ve a newsapi.org para obtener una gratuita.")
+                return
+            
+            category = self.category_var.get()
+            country = self.country_var.get()
+            search_query = self.search_entry.get().strip()
+            
+            # Construir URL de la API
+            if search_query:
+                url = f"https://newsapi.org/v2/everything?q={search_query}&language={country}&sortBy=publishedAt&apiKey={NEWS_API_KEY}"
+            else:
+                url = f"https://newsapi.org/v2/top-headlines?country={country}&category={category}&apiKey={NEWS_API_KEY}"
+            
+            # Realizar petición
+            response = requests.get(url, timeout=15)
+            data = response.json()
+            
+            # Actualizar interfaz en hilo principal
+            self.root.after(0, self._display_news_results, news_frame, loading_label, data, response.status_code)
+            
+        except requests.exceptions.Timeout:
+            self.root.after(0, self._display_error, news_frame, loading_label, 
+                           "Tiempo de espera agotado. Verifica tu conexión a internet.")
+            
+        except requests.exceptions.ConnectionError:
+            self.root.after(0, self._display_error, news_frame, loading_label, 
+                           "Error de conexión. Verifica tu conexión a internet.")
+            
+        except Exception as e:
+            self.root.after(0, self._display_error, news_frame, loading_label, str(e))
+            
+    def _display_news_results(self, news_frame, loading_label, data, status_code):
+        """Mostrar resultados de noticias en la interfaz"""
+        loading_label.destroy()
+        
+        if status_code == 200 and data.get('articles'):
+            articles = data['articles'][:10]  # Mostrar máximo 10 noticias
+            
+            # Título con número de noticias
+            header_label = ctk.CTkLabel(news_frame, 
+                                       text=f"📰 {len(articles)} noticias encontradas",
+                                       font=ctk.CTkFont(size=18, weight="bold"))
+            header_label.pack(pady=10)
+            
+            for i, article in enumerate(articles):
+                self._create_news_card(news_frame, article, i)
+                
+            # Botón para leer resumen de voz
+            if articles:
+                voice_button = ctk.CTkButton(news_frame, text="🔊 Leer resumen de voz",
+                                           command=lambda: self._read_news_summary(articles[:3]))
+                voice_button.pack(pady=10)
+                
+        elif status_code == 401:
+            error_label = ctk.CTkLabel(news_frame, text="❌ API key inválida",
+                                      font=ctk.CTkFont(size=16))
+            error_label.pack(pady=20)
+            
+            help_label = ctk.CTkLabel(news_frame, 
+                                     text="Ve a newsapi.org para obtener una API key gratuita\ny agrégala al archivo .env",
+                                     font=ctk.CTkFont(size=12))
+            help_label.pack(pady=10)
+            
+        elif status_code == 429:
+            error_label = ctk.CTkLabel(news_frame, text="⏰ Límite de consultas excedido",
+                                      font=ctk.CTkFont(size=16))
+            error_label.pack(pady=20)
+            
+            help_label = ctk.CTkLabel(news_frame, 
+                                     text="Intenta más tarde o actualiza tu plan en newsapi.org",
+                                     font=ctk.CTkFont(size=12))
+            help_label.pack(pady=10)
+            
+        else:
+            error_msg = data.get('message', 'No se encontraron noticias') if isinstance(data, dict) else 'Error desconocido'
+            error_label = ctk.CTkLabel(news_frame, text=f"❌ {error_msg}",
+                                      font=ctk.CTkFont(size=16))
+            error_label.pack(pady=20)
+            
+            # Botón para ayuda de configuración
+            if status_code == 401 or not NEWS_API_KEY:
+                help_button = ctk.CTkButton(news_frame, text="🔧 Ayuda de configuración",
+                                           command=self._show_api_help)
+                help_button.pack(pady=10)
+            
+    def _display_error(self, news_frame, loading_label, error_msg):
+        """Mostrar error en la interfaz"""
+        loading_label.destroy()
+        error_label = ctk.CTkLabel(news_frame, text=f"❌ Error: {error_msg}",
+                                  font=ctk.CTkFont(size=16))
+        error_label.pack(pady=20)
+        
+    def _create_news_card(self, parent, article, index):
+        """Crear tarjeta individual de noticia"""
+        # Frame para la noticia
+        card_frame = ctk.CTkFrame(parent)
+        card_frame.pack(fill="x", padx=5, pady=5)
+        
+        # Título de la noticia
+        title = article.get('title', 'Sin título')[:100] + ('...' if len(article.get('title', '')) > 100 else '')
+        title_label = ctk.CTkLabel(card_frame, text=f"{index + 1}. {title}",
+                                  font=ctk.CTkFont(size=14, weight="bold"),
+                                  wraplength=800)
+        title_label.pack(anchor="w", padx=10, pady=(10, 5))
+        
+        # Descripción
+        description = article.get('description', 'Sin descripción')
+        if description and len(description) > 200:
+            description = description[:200] + "..."
+        
+        desc_label = ctk.CTkLabel(card_frame, text=description,
+                                 font=ctk.CTkFont(size=12),
+                                 wraplength=800, anchor="w")
+        desc_label.pack(anchor="w", padx=10, pady=5)
+        
+        # Información adicional
+        source = article.get('source', {}).get('name', 'Fuente desconocida')
+        published_at = article.get('publishedAt', '')
+        if published_at:
+            try:
+                # Formatear fecha
+                date_obj = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+                published_at = date_obj.strftime('%d/%m/%Y %H:%M')
+            except:
+                pass
+                
+        info_text = f"📰 {source} | 📅 {published_at}"
+        info_label = ctk.CTkLabel(card_frame, text=info_text,
+                                 font=ctk.CTkFont(size=10), 
+                                 text_color="gray")
+        info_label.pack(anchor="w", padx=10, pady=5)
+        
+        # Botones de acción
+        buttons_frame = ctk.CTkFrame(card_frame)
+        buttons_frame.pack(fill="x", padx=10, pady=5)
+        
+        # Botón leer artículo
+        if article.get('url'):
+            read_button = ctk.CTkButton(buttons_frame, text="🔗 Leer completa",
+                                       command=lambda url=article['url']: webbrowser.open(url),
+                                       width=120, height=30)
+            read_button.pack(side="left", padx=5)
+            
+        # Botón escuchar
+        listen_button = ctk.CTkButton(buttons_frame, text="🔊 Escuchar",
+                                     command=lambda: self._speak_article(article),
+                                     width=100, height=30)
+        listen_button.pack(side="left", padx=5)
+        
+        # Botón compartir
+        share_button = ctk.CTkButton(buttons_frame, text="📤 Compartir",
+                                    command=lambda: self._share_article(article),
+                                    width=100, height=30)
+        share_button.pack(side="left", padx=5)
+        
+    def _speak_article(self, article):
+        """Leer artículo en voz alta"""
+        title = article.get('title', '')
+        description = article.get('description', '')
+        text_to_speak = f"Noticia: {title}. {description}"
+        
+        threading.Thread(target=lambda: self.speak(text_to_speak), daemon=True).start()
+        
+    def _share_article(self, article):
+        """Compartir artículo"""
+        title = article.get('title', 'Sin título')
+        url = article.get('url', '')
+        
+        share_text = f"{title}\n{url}"
+        
+        # Copiar al portapapeles
+        try:
+            import pyperclip
+            pyperclip.copy(share_text)
+            messagebox.showinfo("Compartir", "Artículo copiado al portapapeles")
+        except ImportError:
+            # Si pyperclip no está disponible, mostrar ventana con el texto
+            share_window = ctk.CTkToplevel(self.root)
+            share_window.title("Compartir Artículo")
+            share_window.geometry("400x200")
+            
+            text_widget = ctk.CTkTextbox(share_window)
+            text_widget.pack(fill="both", expand=True, padx=10, pady=10)
+            text_widget.insert("1.0", share_text)
+            
+    def _read_news_summary(self, articles):
+        """Leer resumen de las principales noticias"""
+        summary_text = "Resumen de noticias principales: "
+        
+        for i, article in enumerate(articles, 1):
+            title = article.get('title', 'Sin título')
+            summary_text += f"Noticia {i}: {title}. "
+            
+        threading.Thread(target=lambda: self.speak(summary_text), daemon=True).start()
+        
+    def get_quick_news_summary(self, category="general"):
+        """Obtener resumen rápido de noticias para comandos de voz"""
+        try:
+            # Verificar si tenemos API key
+            if not NEWS_API_KEY or NEWS_API_KEY == "tu_news_api_key_aqui":
+                self.speak("Lo siento, necesitas configurar la API key de noticias en el archivo .env")
+                self.add_to_chat("Angie: ⚠️ API key de noticias no configurada")
+                self.add_to_chat("Angie: Ve a newsapi.org, obtén una API key gratuita y agrégala al archivo .env")
+                self.add_to_chat("Angie: Formato: NEWS_API_KEY=tu_api_key_aqui")
+                return
+            
+            # Traducir categoría al español para el mensaje
+            category_names = {
+                "general": "generales",
+                "business": "negocios", 
+                "entertainment": "entretenimiento",
+                "health": "salud",
+                "science": "ciencia", 
+                "sports": "deportes",
+                "technology": "tecnología"
+            }
+            category_spanish = category_names.get(category, category)
+            
+            self.add_to_chat(f"Angie: 🔄 Buscando noticias de {category_spanish}...")
+            
+            # Lista de países a intentar (ordenados por probabilidad de tener noticias)
+            countries_to_try = ["us", "gb", "es"]
+            success = False
+            
+            for country in countries_to_try:
+                try:
+                    url = f"https://newsapi.org/v2/top-headlines?country={country}&category={category}&apiKey={NEWS_API_KEY}"
+                    
+                    response = requests.get(url, timeout=10)
+                    data = response.json()
+                    
+                    if response.status_code == 200 and data.get('articles') and len(data['articles']) > 0:
+                        articles = data['articles'][:3]  # Solo las 3 principales
+                        
+                        # Información sobre el país usado
+                        country_names = {"us": "Estados Unidos", "gb": "Reino Unido", "es": "España"}
+                        country_name = country_names.get(country, country.upper())
+                        
+                        summary = f"Principales noticias de {category_spanish} desde {country_name}: "
+                        for i, article in enumerate(articles, 1):
+                            title = article.get('title', 'Sin título')
+                            # Limpiar el título para lectura de voz
+                            title_clean = title.replace('\n', ' ').replace('\r', ' ')
+                            summary += f"Noticia {i}: {title_clean}. "
+                            
+                        self.speak(summary)
+                        self.add_to_chat(f"Angie: {summary}")
+                        
+                        # También mostrar en chat con mejor formato
+                        self.add_to_chat(f"Angie: 📰 Top 3 noticias de {category_spanish} ({country_name}):")
+                        for i, article in enumerate(articles, 1):
+                            title = article.get('title', 'Sin título')
+                            source = article.get('source', {}).get('name', 'Fuente desconocida')
+                            self.add_to_chat(f"  {i}. {title} ({source})")
+                        
+                        success = True
+                        break
+                        
+                except requests.exceptions.RequestException:
+                    continue
+            
+            if success:
+                return
+            
+            # Si llegamos aquí, ningún país funcionó, intentar último intento con diagnóstico
+            try:
+                url = f"https://newsapi.org/v2/top-headlines?country=es&category={category}&apiKey={NEWS_API_KEY}"
+                response = requests.get(url, timeout=10)
+                data = response.json()
+                
+                if response.status_code == 401:
+                    self.speak("La API key de noticias no es válida")
+                    self.add_to_chat("Angie: ❌ API key de noticias inválida")
+                    self.add_to_chat("Angie: Verifica tu API key en el archivo .env")
+                    
+                elif response.status_code == 429:
+                    self.speak("Se ha excedido el límite de consultas de noticias")
+                    self.add_to_chat("Angie: ⏰ Límite de consultas excedido")
+                    self.add_to_chat("Angie: Intenta más tarde o actualiza tu plan en newsapi.org")
+                    
+                else:
+                    error_msg = data.get('message', f'Error HTTP {response.status_code}')
+                    self.speak(f"No hay noticias de {category_spanish} disponibles en este momento")
+                    self.add_to_chat(f"Angie: ⚠️ No hay noticias de {category_spanish} disponibles")
+                    self.add_to_chat("Angie: � Las noticias en español pueden tener disponibilidad limitada")
+                    self.add_to_chat("Angie: 🌐 Tip: Usa el centro de noticias para explorar otras fuentes")
+            except:
+                self.speak(f"No pude obtener noticias de {category_spanish}")
+                self.add_to_chat(f"Angie: ❌ Error al obtener noticias de {category_spanish}")
+                self.add_to_chat("Angie: 💡 Tip: Haz clic en el botón 'Noticias' para acceder al centro completo")
+                
+        except requests.exceptions.Timeout:
+            self.speak("La conexión tardó demasiado")
+            self.add_to_chat("Angie: ⏰ Tiempo de espera agotado. Verifica tu conexión a internet")
+            
+        except requests.exceptions.ConnectionError:
+            self.speak("No hay conexión a internet")
+            self.add_to_chat("Angie: 🌐 Error de conexión. Verifica tu conexión a internet")
+            
+        except Exception as e:
+            self.speak("Ocurrió un error al obtener las noticias")
+            self.add_to_chat(f"Angie: ❌ Error: {str(e)}")
+            self.add_to_chat("Angie: 💡 Tip: Usa el botón 'Noticias' en la interfaz para más opciones")
+    
+    def _show_api_help(self):
+        """Mostrar ayuda para configurar la API de noticias"""
+        help_window = ctk.CTkToplevel(self.root)
+        help_window.title("🔧 Configuración de API de Noticias")
+        help_window.geometry("500x400")
+        help_window.resizable(True, True)
+        
+        # Frame principal
+        main_frame = ctk.CTkFrame(help_window)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        # Título
+        title_label = ctk.CTkLabel(main_frame, text="🔧 Configurar API de Noticias", 
+                                  font=ctk.CTkFont(size=20, weight="bold"))
+        title_label.pack(pady=10)
+        
+        # Instrucciones
+        instructions = """
+📋 Pasos para configurar las noticias:
+
+1. Ve a https://newsapi.org/
+2. Haz clic en "Get API Key" 
+3. Crea una cuenta gratuita
+4. Copia tu API key
+
+5. Crea un archivo .env en la carpeta del proyecto
+6. Agrega esta línea:
+   NEWS_API_KEY=tu_api_key_aqui
+
+7. Reinicia la aplicación
+
+✅ ¡Listo! Ya podrás acceder a las noticias.
+
+💡 Plan gratuito: 1,000 consultas/mes
+"""
+        
+        instructions_label = ctk.CTkLabel(main_frame, text=instructions,
+                                        font=ctk.CTkFont(size=12),
+                                        justify="left")
+        instructions_label.pack(pady=10, padx=10, fill="both", expand=True)
+        
+        # Botones
+        buttons_frame = ctk.CTkFrame(main_frame)
+        buttons_frame.pack(fill="x", pady=10)
+        
+        # Botón para abrir NewsAPI
+        newsapi_button = ctk.CTkButton(buttons_frame, text="🌐 Abrir NewsAPI.org",
+                                      command=lambda: webbrowser.open("https://newsapi.org/"))
+        newsapi_button.pack(side="left", padx=5)
+        
+        # Botón cerrar
+        close_button = ctk.CTkButton(buttons_frame, text="Cerrar",
+                                    command=help_window.destroy)
+        close_button.pack(side="right", padx=5)
+
+# Función principal
+def main():
+    """Función principal para ejecutar Angie Advanced"""
+    try:
+        print("🎤 Iniciando Angie Advanced - Asistente Virtual Pro")
+        print("=" * 60)
+        
+        # Verificar archivo .env
+        if not os.path.exists('.env'):
+            print("⚠️ ADVERTENCIA: No se encuentra el archivo .env")
+            print("Copia config_example.txt a .env y configura tus API keys")
+            print()
+        
+        # Crear instancia del asistente
+        angie = AngieAdvanced()
+        
+        print("✅ Angie Advanced iniciado correctamente")
+        print("🎯 La interfaz gráfica se está abriendo...")
+        print()
+        print("💡 Funcionalidades disponibles:")
+        print("- 🎤 Comandos de voz (activa con 'Activar Angie')")
+        print("- 📰 Centro de noticias avanzado")
+        print("- 🌤️ Información del clima")
+        print("- 📝 Notas y recordatorios")
+        print("- 🔍 Búsquedas en Wikipedia")
+        print("- 💻 Información del sistema")
+        print("- ✅ Gestión de tareas")
+        print()
+        
+        # Ejecutar la aplicación
+        angie.run()
+        
+    except Exception as e:
+        print(f"❌ Error al iniciar Angie Advanced: {str(e)}")
+        print()
+        print("💡 Posibles soluciones:")
+        print("1. Instala las dependencias: pip install -r requirements.txt")
+        print("2. Configura tu archivo .env con las API keys")
+        print("3. Verifica tu conexión a internet")
+        input("Presiona Enter para continuar...")
 
 if __name__ == "__main__":
-    app = AngieAdvanced()
-    app.run()
+    main()

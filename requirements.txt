@@ -13,6 +13,7 @@ newsapi-python
 pyautogui
 psutil
 schedule
+pyperclip
 # Dependencias para entrenamiento LSTM
 tensorflow>=2.10.0
 numpy>=1.21.0
