@@ -34,6 +34,7 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
+DEFAULT_CITY = os.getenv("DEFAULT_CITY", "Madrid")
 
 class AngieAdvanced:
     def __init__(self):
@@ -314,7 +315,15 @@ class AngieAdvanced:
         
         # Comandos de clima
         elif "clima" in command or "tiempo" in command:
-            self.get_weather()
+            # Extraer ciudad si se especifica
+            if " en " in command:
+                city = command.split(" en ")[-1].strip()
+                self.get_weather_for_city(city)
+            elif " de " in command:
+                city = command.split(" de ")[-1].strip()
+                self.get_weather_for_city(city)
+            else:
+                self.get_weather()
         
         # Comandos de noticias
         elif "noticias" in command:
@@ -394,22 +403,53 @@ class AngieAdvanced:
     
     def get_weather(self):
         try:
-            city = "Madrid"
-            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric&lang=es"
+            city = DEFAULT_CITY
+            # WeatherAPI endpoint for current weather
+            url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}&lang=es"
             response = requests.get(url)
             data = response.json()
             
             if response.status_code == 200:
-                temp = data['main']['temp']
-                description = data['weather'][0]['description']
-                humidity = data['main']['humidity']
-                weather_info = f"En {city}: {temp}°C, {description}, humedad: {humidity}%"
+                temp = data['current']['temp_c']
+                condition = data['current']['condition']['text']
+                humidity = data['current']['humidity']
+                wind_speed = data['current']['wind_kph']
+                feels_like = data['current']['feelslike_c']
+                
+                weather_info = f"En {city}: {temp}°C, {condition}. Sensación térmica: {feels_like}°C, humedad: {humidity}%, viento: {wind_speed} km/h"
                 self.speak(weather_info)
                 self.add_to_chat(f"Angie: {weather_info}")
             else:
-                self.add_to_chat("Angie: No pude obtener el clima")
-        except:
-            self.add_to_chat("Angie: Error al obtener el clima")
+                error_msg = data.get('error', {}).get('message', 'Error desconocido')
+                self.add_to_chat(f"Angie: No pude obtener el clima: {error_msg}")
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al obtener el clima: {str(e)}")
+    
+    def get_weather_for_city(self, city):
+        """Obtiene el clima para una ciudad específica"""
+        try:
+            # WeatherAPI endpoint for current weather
+            url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_API_KEY}&q={city}&lang=es"
+            response = requests.get(url)
+            data = response.json()
+            
+            if response.status_code == 200:
+                temp = data['current']['temp_c']
+                condition = data['current']['condition']['text']
+                humidity = data['current']['humidity']
+                wind_speed = data['current']['wind_kph']
+                feels_like = data['current']['feelslike_c']
+                location = data['location']['name']
+                country = data['location']['country']
+                
+                weather_info = f"En {location}, {country}: {temp}°C, {condition}. Sensación térmica: {feels_like}°C, humedad: {humidity}%, viento: {wind_speed} km/h"
+                self.speak(weather_info)
+                self.add_to_chat(f"Angie: {weather_info}")
+            else:
+                error_msg = data.get('error', {}).get('message', 'Ciudad no encontrada')
+                self.add_to_chat(f"Angie: No pude obtener el clima de {city}: {error_msg}")
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al obtener el clima de {city}: {str(e)}")
     
     def get_news(self):
         try:
@@ -661,4 +701,4 @@ class AngieAdvanced:
 
 if __name__ == "__main__":
     app = AngieAdvanced()
-    app.run() 
+    app.run()
