@@ -188,8 +188,7 @@ class AngieAdvanced:
             ("🖥️ Captura", self.take_screenshot),
             ("💻 Sistema", self.system_info),
             ("📅 Recordatorios", self.show_reminders),
-            ("✅ Tareas", self.show_tasks),
-            ("🌐 Navegar", self.open_website)
+            ("✅ Tareas", self.show_tasks)
         ]
         
         for i, (text, command) in enumerate(commands):
@@ -362,7 +361,12 @@ class AngieAdvanced:
         # Comandos de búsqueda
         elif "busca" in command or "buscar" in command:
             query = command.replace("busca", "").replace("buscar", "").strip()
-            self.search_wikipedia(query)
+            if query:
+                self.search_wikipedia(query)
+            else:
+                self.speak("¿Qué quieres que busque?")
+                self.add_to_chat("Angie: ¿Qué quieres que busque en Wikipedia?")
+                self.show_search_window()
         
         # Comandos de notas
         elif "crear nota" in command or "nueva nota" in command or "tomar nota" in command or "anota" in command:
@@ -517,20 +521,104 @@ class AngieAdvanced:
         self.add_to_chat(f"Angie: Son las {hora} del {fecha}")
     
     def search_wikipedia(self, query=""):
+        """Buscar información en Wikipedia"""
         try:
             if not query:
-                query = "Python programming"
+                # Si no hay query, abrir ventana para ingresar búsqueda
+                self.show_search_window()
+                return
             
-            search_results = wikipedia.search(query, results=1)
+            # Configurar idioma español para Wikipedia
+            wikipedia.set_lang("es")
+            
+            self.add_to_chat(f"Angie: 🔍 Buscando '{query}' en Wikipedia...")
+            
+            search_results = wikipedia.search(query, results=3)
             if search_results:
-                page = wikipedia.page(search_results[0])
-                summary = wikipedia.summary(search_results[0], sentences=2)
-                self.speak(f"Encontré información sobre {query}: {summary}")
-                self.add_to_chat(f"Angie: {summary}")
+                try:
+                    # Intentar obtener el primer resultado
+                    page = wikipedia.page(search_results[0])
+                    summary = wikipedia.summary(search_results[0], sentences=3)
+                    
+                    response = f"Encontré información sobre '{query}': {summary}"
+                    self.speak(response)
+                    self.add_to_chat(f"Angie: 📖 {response}")
+                    
+                    # Mostrar enlace para más información
+                    self.add_to_chat(f"Angie: 🔗 Más información: {page.url}")
+                    
+                except wikipedia.exceptions.DisambiguationError as e:
+                    # Si hay ambigüedad, mostrar opciones
+                    options = e.options[:5]  # Máximo 5 opciones
+                    options_text = ", ".join(options)
+                    response = f"Encontré varias opciones para '{query}': {options_text}. Sé más específico."
+                    self.speak(response)
+                    self.add_to_chat(f"Angie: 📋 {response}")
+                    
+                except wikipedia.exceptions.PageError:
+                    self.add_to_chat(f"Angie: ❌ No encontré una página específica para '{query}'")
+                    
             else:
-                self.add_to_chat("Angie: No encontré información sobre eso")
-        except:
-            self.add_to_chat("Angie: Error al buscar en Wikipedia")
+                response = f"No encontré resultados para '{query}' en Wikipedia"
+                self.speak(response)
+                self.add_to_chat(f"Angie: ❌ {response}")
+                
+        except Exception as e:
+            error_msg = f"Error al buscar '{query}' en Wikipedia: {str(e)}"
+            self.add_to_chat(f"Angie: ❌ {error_msg}")
+    
+    def show_search_window(self):
+        """Mostrar ventana para ingresar término de búsqueda"""
+        try:
+            search_window = ctk.CTkToplevel(self.root)
+            search_window.title("Buscar en Wikipedia")
+            search_window.geometry("400x200")
+            search_window.grab_set()  # Hacer la ventana modal
+            
+            # Título
+            title_label = ctk.CTkLabel(search_window, text="🔍 Buscar en Wikipedia", 
+                                      font=ctk.CTkFont(size=18, weight="bold"))
+            title_label.pack(pady=20)
+            
+            # Campo de búsqueda
+            search_label = ctk.CTkLabel(search_window, text="¿Qué quieres buscar?")
+            search_label.pack(pady=5)
+            
+            search_entry = ctk.CTkEntry(search_window, width=300, 
+                                       placeholder_text="Ejemplo: inteligencia artificial")
+            search_entry.pack(pady=10)
+            search_entry.focus_set()  # Enfocar el campo de entrada
+            
+            def perform_search():
+                query = search_entry.get().strip()
+                if query:
+                    search_window.destroy()
+                    self.search_wikipedia(query)
+                else:
+                    search_entry.configure(placeholder_text="Por favor, ingresa un término de búsqueda")
+            
+            def on_enter(event):
+                perform_search()
+            
+            # Vincular Enter para buscar
+            search_entry.bind("<Return>", on_enter)
+            
+            # Botones
+            button_frame = ctk.CTkFrame(search_window)
+            button_frame.pack(pady=20)
+            
+            search_button = ctk.CTkButton(button_frame, text="🔍 Buscar", 
+                                         command=perform_search)
+            search_button.pack(side="left", padx=5)
+            
+            cancel_button = ctk.CTkButton(button_frame, text="Cancelar", 
+                                         command=search_window.destroy)
+            cancel_button.pack(side="left", padx=5)
+            
+            self.add_to_chat("Angie: Ventana de búsqueda abierta")
+            
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al abrir ventana de búsqueda: {str(e)}")
     
     def take_notes(self):
         """Abrir ventana para crear una nueva nota"""

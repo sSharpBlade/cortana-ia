@@ -7,12 +7,14 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 ## ✨ Funcionalidades Implementadas
 
 ### 🗄️ Almacenamiento en Base de Datos
+
 - **✅ Migración de archivos .txt a SQLite**
 - **✅ Tabla `notes` con campos: id, title, content, created_date, modified_date**
 - **✅ Persistencia de datos entre sesiones**
 - **✅ Integridad referencial y validaciones**
 
 ### 🗣️ Comandos de Voz Mejorados
+
 - **✅ `"crear nota"` / `"nueva nota"` / `"tomar nota"`** - Crear nueva nota
 - **✅ `"ver notas"` / `"mostrar notas"` / `"mis notas"`** - Visualizar todas las notas
 - **✅ `"buscar nota [término]"`** - Búsqueda inteligente en títulos y contenido
@@ -21,6 +23,7 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 - **✅ `"ayuda notas"`** - Ayuda completa del sistema
 
 ### 🖼️ Interfaz Gráfica Avanzada
+
 - **✅ Botón "📝 Nueva Nota"** - Crear notas con título y contenido
 - **✅ Botón "📚 Ver Notas"** - Vista completa de todas las notas
 - **✅ Ventana de creación** con campos separados para título y contenido
@@ -28,24 +31,28 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 - **✅ Funciones por nota**: Leer, Editar, Eliminar, Copiar
 
 ### 🔍 Búsqueda y Consulta
+
 - **✅ Búsqueda por comandos de voz** con términos específicos
 - **✅ Búsqueda en tiempo real** en títulos y contenido
 - **✅ Resumen automático** con estadísticas de notas
 - **✅ Listado de notas recientes** ordenadas por fecha de modificación
 
 ### 🔊 Lectura por Voz
+
 - **✅ Lectura individual** de notas desde la interfaz
 - **✅ Lectura automática** de notas recientes por comando de voz
 - **✅ Resumen hablado** del número de notas disponibles
 - **✅ Confirmaciones de voz** para acciones completadas
 
 ### ✏️ Edición y Gestión
+
 - **✅ Edición completa** de título y contenido desde la interfaz
 - **✅ Eliminación con confirmación** para evitar pérdidas accidentales
 - **✅ Actualización automática** de fecha de modificación
 - **✅ Copia al portapapeles** del contenido de las notas
 
 ### 📱 Comandos de Texto
+
 - **✅ Soporte completo** para todos los comandos de voz como texto
 - **✅ Procesamiento inteligente** en el chat de la interfaz
 - **✅ Respuestas contextuales** con confirmaciones y errores
@@ -53,19 +60,23 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 ## 🛠️ Archivos Creados/Modificados
 
 ### Archivo Principal
+
 - **`angie_advanced.py`** - Archivo principal con todas las mejoras implementadas
 
 ### Scripts de Utilidad
+
 - **`init_database.py`** - Inicialización de la base de datos SQLite
 - **`test_notes_system.py`** - Suite de pruebas completa del sistema
 - **`demo_notes_interactive.py`** - Demo interactivo de todas las funcionalidades
 
 ### Documentación
+
 - **`README_NOTAS.md`** - Documentación completa del sistema de notas
 
 ## 🧪 Validación y Pruebas
 
 ### ✅ Tests Automáticos Exitosos
+
 - **Conexión a base de datos**: ✅ Validada
 - **Creación de notas**: ✅ 5 notas de ejemplo creadas
 - **Búsqueda**: ✅ Búsquedas por múltiples términos funcionando
@@ -73,6 +84,7 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 - **Comandos de voz**: ✅ Todos los comandos documentados
 
 ### 📊 Resultados de Pruebas
+
 ```
 📝 Total de notas: 5
 🔍 Búsquedas exitosas: 100%
@@ -84,49 +96,55 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 ## 🎯 Características Destacadas
 
 ### 🚀 Rendimiento
+
 - **Base de datos optimizada** con índices automáticos
 - **Búsquedas rápidas** con LIKE patterns
 - **Interfaz responsiva** sin bloqueos durante operaciones
 
 ### 🔒 Robustez
+
 - **Manejo de errores** completo con mensajes claros
 - **Validaciones** de entrada en todos los campos
 - **Confirmaciones** para operaciones destructivas
 - **Recuperación** automática de errores de conexión
 
 ### 🎨 Usabilidad
+
 - **Comandos intuitivos** en lenguaje natural
 - **Interfaz moderna** con CustomTkinter
 - **Feedback inmediato** visual y por voz
 - **Ayuda contextual** integrada
 
 ### 🔄 Compatibilidad
+
 - **Comandos de voz** y texto intercambiables
 - **Almacenamiento persistente** en base de datos local
 - **Integración perfecta** con el resto de funcionalidades de Angie
 
 ## 📈 Comparación: Antes vs Después
 
-| Aspecto | ❌ Antes | ✅ Después |
-|---------|----------|------------|
-| **Almacenamiento** | Archivos .txt sueltos | Base de datos SQLite |
-| **Comandos** | Solo "nota" básico | 6 comandos específicos |
-| **Interfaz** | Ventana básica de texto | Sistema completo con botones |
-| **Búsqueda** | No disponible | Búsqueda completa por voz/texto |
-| **Lectura por voz** | No disponible | Lectura individual y grupal |
-| **Edición** | No disponible | Edición completa desde interfaz |
-| **Gestión** | Solo creación | CRUD completo |
-| **Ayuda** | No disponible | Ayuda integrada y documentación |
+| Aspecto             | ❌ Antes                | ✅ Después                      |
+| ------------------- | ----------------------- | ------------------------------- |
+| **Almacenamiento**  | Archivos .txt sueltos   | Base de datos SQLite            |
+| **Comandos**        | Solo "nota" básico      | 6 comandos específicos          |
+| **Interfaz**        | Ventana básica de texto | Sistema completo con botones    |
+| **Búsqueda**        | No disponible           | Búsqueda completa por voz/texto |
+| **Lectura por voz** | No disponible           | Lectura individual y grupal     |
+| **Edición**         | No disponible           | Edición completa desde interfaz |
+| **Gestión**         | Solo creación           | CRUD completo                   |
+| **Ayuda**           | No disponible           | Ayuda integrada y documentación |
 
 ## 🎯 Instrucciones de Uso
 
 ### 🚀 Inicio Rápido
+
 1. **Ejecutar**: `python angie_advanced.py`
 2. **Crear nota**: Clic en "📝 Nueva Nota" o di "crear nota"
 3. **Ver notas**: Clic en "📚 Ver Notas" o di "ver notas"
 4. **Buscar**: Di "buscar nota [término]" o usa comandos de texto
 
 ### 🎤 Comandos de Voz Principales
+
 - **Crear**: `"Angie, crear nota"`
 - **Ver**: `"Angie, ver notas"`
 - **Buscar**: `"Angie, buscar nota compras"`
@@ -134,6 +152,7 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 - **Leer**: `"Angie, leer notas"`
 
 ### 💬 Comandos de Texto
+
 - Escribe cualquier comando de voz en el chat
 - Ejemplo: `buscar nota proyecto`
 - Ejemplo: `cuántas notas`
@@ -141,16 +160,19 @@ Se ha completado la mejora integral del sistema de notas de Angie Advanced, tran
 ## 🔧 Solución de Problemas
 
 ### Si la base de datos no existe:
+
 ```bash
 python init_database.py
 ```
 
 ### Para probar todas las funcionalidades:
+
 ```bash
 python test_notes_system.py
 ```
 
 ### Para demo interactivo:
+
 ```bash
 python demo_notes_interactive.py
 ```
