@@ -90,6 +90,17 @@ class AngieAdvanced:
             )
         ''')
         
+        # Crear tabla para notas
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_date TEXT DEFAULT CURRENT_TIMESTAMP,
+                modified_date TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
         self.conn.commit()
         
     def configurar_gemini(self):
@@ -172,7 +183,8 @@ class AngieAdvanced:
             ("📰 Noticias", self.get_news),
             ("⏰ Hora", self.get_time),
             ("🔍 Buscar", self.search_wikipedia),
-            ("📝 Notas", self.take_notes),
+            ("📝 Nueva Nota", self.take_notes),
+            ("📚 Ver Notas", self.show_all_notes),
             ("🖥️ Captura", self.take_screenshot),
             ("💻 Sistema", self.system_info),
             ("📅 Recordatorios", self.show_reminders),
@@ -353,7 +365,29 @@ class AngieAdvanced:
             self.search_wikipedia(query)
         
         # Comandos de notas
-        elif "nota" in command or "anota" in command:
+        elif "crear nota" in command or "nueva nota" in command or "tomar nota" in command or "anota" in command:
+            self.take_notes()
+        
+        elif "ver notas" in command or "mostrar notas" in command or "mis notas" in command:
+            self.show_all_notes()
+        
+        elif "buscar nota" in command:
+            # Extraer término de búsqueda
+            search_term = command.replace("buscar nota", "").replace("buscar en notas", "").strip()
+            if search_term:
+                self.search_notes_by_voice_command(search_term)
+            else:
+                self.speak("¿Qué quieres buscar en las notas?")
+                self.add_to_chat("Angie: ¿Qué quieres buscar en las notas?")
+        
+        elif "cuántas notas" in command or "resumen de notas" in command:
+            self.get_notes_summary()
+        
+        elif "leer notas" in command:
+            self.read_recent_notes_aloud()
+        
+        # Comandos de notas específicas (legacy - crear nota simple)
+        elif "nota" in command:
             self.take_notes()
         
         # Comandos de captura
@@ -381,6 +415,9 @@ class AngieAdvanced:
             self.speak("¡Hasta luego! Que tengas un buen día")
             self.add_to_chat("Angie: ¡Hasta luego! Que tengas un buen día")
             self.stop_listening()
+        
+        elif "ayuda notas" in command or "ayuda de notas" in command:
+            self.show_notes_help()
         
         else:
             # Usar Gemini para respuestas generales
@@ -496,28 +533,295 @@ class AngieAdvanced:
             self.add_to_chat("Angie: Error al buscar en Wikipedia")
     
     def take_notes(self):
+        """Abrir ventana para crear una nueva nota"""
         try:
             note_window = ctk.CTkToplevel(self.root)
-            note_window.title("Tomar Notas")
-            note_window.geometry("400x300")
+            note_window.title("Crear Nueva Nota")
+            note_window.geometry("500x400")
             
-            note_text = ctk.CTkTextbox(note_window)
-            note_text.pack(fill="both", expand=True, padx=10, pady=10)
+            # Campo para el título
+            title_label = ctk.CTkLabel(note_window, text="Título:")
+            title_label.pack(pady=(10, 5))
+            
+            title_entry = ctk.CTkEntry(note_window, width=400)
+            title_entry.pack(pady=(0, 10))
+            
+            # Campo para el contenido
+            content_label = ctk.CTkLabel(note_window, text="Contenido:")
+            content_label.pack(pady=(0, 5))
+            
+            note_text = ctk.CTkTextbox(note_window, height=200)
+            note_text.pack(fill="both", expand=True, padx=10, pady=(0, 10))
             
             def save_note():
-                note_content = note_text.get("1.0", "end-1c")
-                if note_content.strip():
-                    with open(f"nota_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt", "w", encoding="utf-8") as f:
-                        f.write(note_content)
-                    messagebox.showinfo("Nota Guardada", "Nota guardada exitosamente")
-                    note_window.destroy()
+                title = title_entry.get().strip()
+                content = note_text.get("1.0", "end-1c").strip()
+                
+                if not title:
+                    title = f"Nota {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+                
+                if content:
+                    try:
+                        cursor = self.conn.cursor()
+                        cursor.execute('''
+                            INSERT INTO notes (title, content, created_date, modified_date)
+                            VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                        ''', (title, content))
+                        self.conn.commit()
+                        
+                        messagebox.showinfo("Nota Guardada", "Nota guardada exitosamente en la base de datos")
+                        self.speak("Nota guardada correctamente")
+                        note_window.destroy()
+                        self.add_to_chat(f"Angie: Nota '{title}' guardada exitosamente")
+                    except Exception as e:
+                        messagebox.showerror("Error", f"Error al guardar la nota: {str(e)}")
+                        self.add_to_chat("Angie: Error al guardar la nota")
+                else:
+                    messagebox.showwarning("Advertencia", "El contenido de la nota no puede estar vacío")
             
-            save_button = ctk.CTkButton(note_window, text="Guardar Nota", command=save_note)
-            save_button.pack(pady=10)
+            # Botones
+            button_frame = ctk.CTkFrame(note_window)
+            button_frame.pack(pady=10)
             
-            self.add_to_chat("Angie: Ventana de notas abierta")
-        except:
-            self.add_to_chat("Angie: Error al abrir las notas")
+            save_button = ctk.CTkButton(button_frame, text="Guardar Nota", command=save_note)
+            save_button.pack(side="left", padx=5)
+            
+            view_button = ctk.CTkButton(button_frame, text="Ver Todas las Notas", 
+                                      command=self.show_all_notes)
+            view_button.pack(side="left", padx=5)
+            
+            self.add_to_chat("Angie: Ventana para crear nota abierta")
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al abrir las notas: {str(e)}")
+    
+    def show_all_notes(self):
+        """Mostrar todas las notas guardadas en una ventana"""
+        try:
+            notes_window = ctk.CTkToplevel(self.root)
+            notes_window.title("Todas las Notas")
+            notes_window.geometry("700x500")
+            
+            # Frame para la lista de notas
+            notes_frame = ctk.CTkScrollableFrame(notes_window)
+            notes_frame.pack(fill="both", expand=True, padx=10, pady=10)
+            
+            # Obtener todas las notas
+            cursor = self.conn.cursor()
+            cursor.execute('SELECT id, title, content, created_date, modified_date FROM notes ORDER BY modified_date DESC')
+            notes = cursor.fetchall()
+            
+            if not notes:
+                no_notes_label = ctk.CTkLabel(notes_frame, text="No hay notas guardadas")
+                no_notes_label.pack(pady=50)
+                return
+            
+            for note in notes:
+                note_id, title, content, created_date, modified_date = note
+                
+                # Frame para cada nota
+                note_frame = ctk.CTkFrame(notes_frame)
+                note_frame.pack(fill="x", pady=5, padx=5)
+                
+                # Título de la nota
+                title_label = ctk.CTkLabel(note_frame, text=f"📝 {title}", 
+                                         font=ctk.CTkFont(size=16, weight="bold"))
+                title_label.pack(anchor="w", padx=10, pady=(5, 0))
+                
+                # Fecha
+                date_label = ctk.CTkLabel(note_frame, text=f"Creada: {created_date[:16]}")
+                date_label.pack(anchor="w", padx=10)
+                
+                # Contenido (preview)
+                preview = content[:100] + "..." if len(content) > 100 else content
+                content_label = ctk.CTkLabel(note_frame, text=preview, wraplength=600)
+                content_label.pack(anchor="w", padx=10, pady=(0, 5))
+                
+                # Botones
+                button_frame = ctk.CTkFrame(note_frame)
+                button_frame.pack(fill="x", padx=10, pady=5)
+                
+                read_button = ctk.CTkButton(button_frame, text="Leer", width=80,
+                                          command=lambda n=note: self.read_note_aloud(n))
+                read_button.pack(side="left", padx=2)
+                
+                edit_button = ctk.CTkButton(button_frame, text="Editar", width=80,
+                                          command=lambda n=note: self.edit_note(n))
+                edit_button.pack(side="left", padx=2)
+                
+                delete_button = ctk.CTkButton(button_frame, text="Eliminar", width=80,
+                                            command=lambda n=note: self.delete_note(n, notes_window))
+                delete_button.pack(side="left", padx=2)
+                
+                copy_button = ctk.CTkButton(button_frame, text="Copiar", width=80,
+                                          command=lambda c=content: self.copy_to_clipboard(c))
+                copy_button.pack(side="left", padx=2)
+            
+            self.add_to_chat(f"Angie: Mostrando {len(notes)} notas guardadas")
+            
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al mostrar las notas: {str(e)}")
+    
+    def read_note_aloud(self, note):
+        """Leer una nota en voz alta"""
+        try:
+            note_id, title, content, created_date, modified_date = note
+            text_to_read = f"Nota: {title}. Contenido: {content}"
+            self.speak(text_to_read)
+            self.add_to_chat(f"Angie: Leyendo nota '{title}'")
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al leer la nota: {str(e)}")
+    
+    def edit_note(self, note):
+        """Editar una nota existente"""
+        try:
+            note_id, title, content, created_date, modified_date = note
+            
+            edit_window = ctk.CTkToplevel(self.root)
+            edit_window.title(f"Editar Nota - {title}")
+            edit_window.geometry("500x400")
+            
+            # Campo para el título
+            title_label = ctk.CTkLabel(edit_window, text="Título:")
+            title_label.pack(pady=(10, 5))
+            
+            title_entry = ctk.CTkEntry(edit_window, width=400)
+            title_entry.pack(pady=(0, 10))
+            title_entry.insert(0, title)
+            
+            # Campo para el contenido
+            content_label = ctk.CTkLabel(edit_window, text="Contenido:")
+            content_label.pack(pady=(0, 5))
+            
+            note_text = ctk.CTkTextbox(edit_window, height=200)
+            note_text.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+            note_text.insert("1.0", content)
+            
+            def update_note():
+                new_title = title_entry.get().strip()
+                new_content = note_text.get("1.0", "end-1c").strip()
+                
+                if not new_title:
+                    new_title = title
+                
+                if new_content:
+                    try:
+                        cursor = self.conn.cursor()
+                        cursor.execute('''
+                            UPDATE notes 
+                            SET title = ?, content = ?, modified_date = CURRENT_TIMESTAMP
+                            WHERE id = ?
+                        ''', (new_title, new_content, note_id))
+                        self.conn.commit()
+                        
+                        messagebox.showinfo("Nota Actualizada", "Nota actualizada exitosamente")
+                        self.speak("Nota actualizada correctamente")
+                        edit_window.destroy()
+                        self.add_to_chat(f"Angie: Nota '{new_title}' actualizada exitosamente")
+                    except Exception as e:
+                        messagebox.showerror("Error", f"Error al actualizar la nota: {str(e)}")
+                        self.add_to_chat("Angie: Error al actualizar la nota")
+                else:
+                    messagebox.showwarning("Advertencia", "El contenido de la nota no puede estar vacío")
+            
+            # Botones
+            button_frame = ctk.CTkFrame(edit_window)
+            button_frame.pack(pady=10)
+            
+            update_button = ctk.CTkButton(button_frame, text="Actualizar", command=update_note)
+            update_button.pack(side="left", padx=5)
+            
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al editar la nota: {str(e)}")
+    
+    def delete_note(self, note, parent_window):
+        """Eliminar una nota"""
+        try:
+            note_id, title, content, created_date, modified_date = note
+            
+            if messagebox.askyesno("Confirmar Eliminación", 
+                                 f"¿Estás seguro de que quieres eliminar la nota '{title}'?"):
+                cursor = self.conn.cursor()
+                cursor.execute('DELETE FROM notes WHERE id = ?', (note_id,))
+                self.conn.commit()
+                
+                messagebox.showinfo("Nota Eliminada", "Nota eliminada exitosamente")
+                self.speak("Nota eliminada correctamente")
+                self.add_to_chat(f"Angie: Nota '{title}' eliminada exitosamente")
+                
+                # Cerrar y reabrir la ventana de notas para actualizar
+                parent_window.destroy()
+                self.show_all_notes()
+                
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al eliminar la nota: {str(e)}")
+    
+    def copy_to_clipboard(self, text):
+        """Copiar texto al portapapeles"""
+        try:
+            import pyperclip
+            pyperclip.copy(text)
+            self.add_to_chat("Angie: Contenido copiado al portapapeles")
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al copiar al portapapeles: {str(e)}")
+    
+    def search_notes_by_voice_command(self, search_term):
+        """Buscar notas por comando de voz"""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute('''
+                SELECT id, title, content, created_date, modified_date 
+                FROM notes 
+                WHERE title LIKE ? OR content LIKE ?
+                ORDER BY modified_date DESC
+            ''', (f'%{search_term}%', f'%{search_term}%'))
+            
+            notes = cursor.fetchall()
+            
+            if notes:
+                if len(notes) == 1:
+                    note = notes[0]
+                    self.speak(f"Encontré una nota: {note[1]}. {note[2]}")
+                    self.add_to_chat(f"Angie: Encontré la nota '{note[1]}'")
+                else:
+                    titles = [note[1] for note in notes]
+                    self.speak(f"Encontré {len(notes)} notas: {', '.join(titles)}")
+                    self.add_to_chat(f"Angie: Encontré {len(notes)} notas: {', '.join(titles)}")
+            else:
+                self.speak(f"No encontré notas que contengan '{search_term}'")
+                self.add_to_chat(f"Angie: No encontré notas con '{search_term}'")
+                
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al buscar notas: {str(e)}")
+    
+    def get_notes_summary(self):
+        """Obtener resumen de todas las notas"""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM notes')
+            count = cursor.fetchone()[0]
+            
+            if count == 0:
+                response = "No tienes notas guardadas"
+            elif count == 1:
+                response = "Tienes 1 nota guardada"
+            else:
+                response = f"Tienes {count} notas guardadas"
+                
+            cursor.execute('SELECT title FROM notes ORDER BY modified_date DESC LIMIT 3')
+            recent_notes = cursor.fetchall()
+            
+            if recent_notes:
+                titles = [note[0] for note in recent_notes]
+                if count <= 3:
+                    response += f". Las notas son: {', '.join(titles)}"
+                else:
+                    response += f". Las más recientes son: {', '.join(titles)}"
+            
+            self.speak(response)
+            self.add_to_chat(f"Angie: {response}")
+            
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al obtener resumen de notas: {str(e)}")
     
     def take_screenshot(self):
         try:
@@ -1150,6 +1454,51 @@ class AngieAdvanced:
         close_button = ctk.CTkButton(buttons_frame, text="Cerrar",
                                     command=help_window.destroy)
         close_button.pack(side="right", padx=5)
+    
+    def show_notes_help(self):
+        """Mostrar ayuda sobre los comandos de notas disponibles"""
+        help_text = """
+📝 COMANDOS DE NOTAS DISPONIBLES:
+
+🗣️ COMANDOS DE VOZ:
+• "Crear nota" / "Nueva nota" / "Tomar nota"
+• "Ver notas" / "Mostrar notas" / "Mis notas"
+• "Buscar nota [término]" - Busca en títulos y contenido
+• "Cuántas notas" / "Resumen de notas"
+• "Leer notas" - Lee las 3 notas más recientes
+
+💬 COMANDOS DE TEXTO:
+Puedes escribir los mismos comandos en el chat de texto.
+
+🖱️ INTERFAZ GRÁFICA:
+• Botón "📝 Nueva Nota" - Crear una nueva nota
+• Botón "📚 Ver Notas" - Ver todas las notas guardadas
+• En cada nota puedes: Leer, Editar, Eliminar, Copiar
+
+✨ CARACTERÍSTICAS:
+• Las notas se guardan en base de datos SQLite
+• Búsqueda por título y contenido
+• Lectura de notas por voz
+• Edición y eliminación de notas
+• Copia de contenido al portapapeles
+• Fechas de creación y modificación
+        """
+        
+        try:
+            help_window = ctk.CTkToplevel(self.root)
+            help_window.title("Ayuda - Sistema de Notas")
+            help_window.geometry("600x500")
+            
+            help_textbox = ctk.CTkTextbox(help_window)
+            help_textbox.pack(fill="both", expand=True, padx=20, pady=20)
+            help_textbox.insert("1.0", help_text)
+            help_textbox.configure(state="disabled")
+            
+            self.speak("He abierto la ayuda del sistema de notas")
+            self.add_to_chat("Angie: Ayuda del sistema de notas mostrada")
+            
+        except Exception as e:
+            self.add_to_chat(f"Angie: Error al mostrar ayuda: {str(e)}")
 
 # Función principal
 def main():
